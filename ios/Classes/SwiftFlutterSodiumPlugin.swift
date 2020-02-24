@@ -149,6 +149,7 @@ public class SwiftFlutterSodiumPlugin: NSObject, FlutterPlugin {
       case "crypto_sign_final_create": return crypto_sign_final_create(call: call)
       case "crypto_sign_final_verify": return crypto_sign_final_verify(call: call)
       case "crypto_sign_ed25519_sk_to_curve25519": return crypto_sign_ed25519_sk_to_curve25519(call: call)
+      case "crypto_sign_ed25519_pk_to_curve25519": return crypto_sign_ed25519_pk_to_curve25519(call: call)
 
       case "randombytes_buf": return randombytes_buf(call: call)
       case "randombytes_buf_deterministic": return randombytes_buf_deterministic(call: call)
@@ -2027,19 +2028,33 @@ public class SwiftFlutterSodiumPlugin: NSObject, FlutterPlugin {
     return ret == 0
   }
 
-  private func crypto_sign_ed25519_sk_to_curve25519(call: FlutterMethodCall) -> Any
-    {
-      let args = call.arguments as! NSDictionary
-      let sk = (args["sk"] as! FlutterStandardTypedData).data
+  private func crypto_sign_ed25519_pk_to_curve25519(call: FlutterMethodCall) -> Any
+  {
+    let args = call.arguments as! NSDictionary
+    let pk = (args["pk"] as! FlutterStandardTypedData).data
 
-      var curve25519Sk = Data(count: flutter_sodium.crypto_scalarmult_curve25519_bytes())
-      let ret = curve25519Sk.withUnsafeMutableBytes { curve25519SkPtr in
-        sk.withUnsafeBytes { skPtr in
-          flutter_sodium.crypto_sign_ed25519_sk_to_curve25519(curve25519SkPtr, skPtr)
-        }
+    var curve25519Pk = Data(count: flutter_sodium.crypto_scalarmult_curve25519_bytes())
+    let ret = curve25519Pk.withUnsafeMutableBytes { curve25519PkPtr in
+      pk.withUnsafeBytes { pkPtr in
+        flutter_sodium.crypto_sign_ed25519_pk_to_curve25519(curve25519PkPtr, pkPtr)
       }
-      return error(ret: ret) ?? FlutterStandardTypedData.init(bytes: curve25519Sk)
     }
+    return error(ret: ret) ?? FlutterStandardTypedData.init(bytes: curve25519Pk)
+  }
+
+  private func crypto_sign_ed25519_sk_to_curve25519(call: FlutterMethodCall) -> Any
+  {
+    let args = call.arguments as! NSDictionary
+    let sk = (args["sk"] as! FlutterStandardTypedData).data
+
+    var curve25519Sk = Data(count: flutter_sodium.crypto_scalarmult_curve25519_bytes())
+    let ret = curve25519Sk.withUnsafeMutableBytes { curve25519SkPtr in
+      sk.withUnsafeBytes { skPtr in
+        flutter_sodium.crypto_sign_ed25519_sk_to_curve25519(curve25519SkPtr, skPtr)
+      }
+    }
+    return error(ret: ret) ?? FlutterStandardTypedData.init(bytes: curve25519Sk)
+  }
 
   private func randombytes_buf(call: FlutterMethodCall) -> Any
   {
